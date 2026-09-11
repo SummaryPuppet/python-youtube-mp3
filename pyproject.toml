@@ -1,0 +1,13 @@
+[project]
+name = "python-youtube-mp3"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "customtkinter>=6.0.0",
+    "yt-dlp>=2026.8.19",
+]
+
+[tool.setuptools]
+py-modules = ["main", "cli", "gui", "youtube"]
