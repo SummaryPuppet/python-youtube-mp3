@@ -8,6 +8,8 @@ class YouTubeDownloader:
 
     def download(self):
         ydl_opts = {
+            'js_runtimes': {'node': {}},
+            'remote_components': ['ejs:github'],
             'format': 'bestaudio/best',
             'outtmpl': f'{self.output_dir}/%(title)s.%(ext)s',
             'writethumbnail': True,
