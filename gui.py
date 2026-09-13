@@ -267,13 +267,16 @@ class VentanaDescarga(ctk.CTk):
         self.after(100, self.drenar_cola)
 
     def escribir_log(self, texto, color=None):
+        if isinstance(color, (tuple, list)):
+            color = color[0] if ctk.get_appearance_mode().lower() == "dark" else color[1]
         self.log.configure(state="normal")
+        inicio = self.log.index("end-1c")
         self.log.insert("end", texto)
         self.log.see("end")
         if color:
-            indice = self.log.index("end-1c")
-            self.log.tag_add("color_" + str(hash(color) & 0xFFFFFF), "1.0", indice)
-            self.log.tag_config("color_" + str(hash(color) & 0xFFFFFF), foreground=color)
+            nombre = "color_" + str(hash(color) & 0xFFFFFF)
+            self.log.tag_add(nombre, inicio, "end")
+            self.log.tag_config(nombre, foreground=color)
         self.log.configure(state="disabled")
 
 
