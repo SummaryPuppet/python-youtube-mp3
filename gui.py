@@ -5,6 +5,7 @@ import tkinter as tk
 
 import customtkinter as ctk
 
+import limpiar
 from youtube import YouTubeDownloader
 
 FAMILIA_FUENTE = "Segoe UI"
@@ -152,6 +153,19 @@ class VentanaDescarga(ctk.CTk):
             anchor="w",
         ).grid(row=1, column=0, sticky="w", pady=(8, 0))
 
+        self.btn_limpiar = ctk.CTkButton(
+            marco,
+            text="Limpiar títulos",
+            width=130,
+            height=30,
+            corner_radius=8,
+            font=ctk.CTkFont(family=FAMILIA_FUENTE, size=13),
+            fg_color="transparent",
+            border_width=1,
+            command=self.limpiar_titulos,
+        )
+        self.btn_limpiar.grid(row=1, column=1, sticky="e", pady=(8, 0))
+
     def _refrescar_lista(self):
         for widget in self.filas.winfo_children():
             if widget is not self.lbl_vacio:
@@ -241,12 +255,37 @@ class VentanaDescarga(ctk.CTk):
             self.msg_queue.put(("avance", (correctas, i, total)))
         self.msg_queue.put(("fin", (correctas, total - correctas)))
 
+    def limpiar_titulos(self):
+        if not os.path.isdir("mp3"):
+            tk.messagebox.showwarning("Sin MP3", "No existe la carpeta mp3/.")
+            return
+        self.btn_limpiar.configure(state="disabled")
+        self.lbl_progreso.configure(text="Limpiando títulos\u2026")
+        threading.Thread(target=self._limpiar_en_hilo, daemon=True).start()
+
+    def _limpiar_en_hilo(self):
+        try:
+            cambios = limpiar.procesar("mp3")
+        except Exception as e:
+            self.msg_queue.put(("log", f"\u2717 ERROR limpiando títulos: {e}\n"))
+            self.msg_queue.put(("limpiar_fin", None))
+            return
+        if cambios:
+            lineas = "\n".join(f"  {antes}  ->  {despues}" for antes, despues in cambios)
+            self.msg_queue.put(("log", f"Títulos limpiados ({len(cambios)}):\n{lineas}\n"))
+        else:
+            self.msg_queue.put(("log", "No hay títulos que limpiar.\n"))
+        self.msg_queue.put(("limpiar_fin", None))
+
     def drenar_cola(self):
         try:
             while True:
                 tipo, dato = self.msg_queue.get_nowait()
                 if tipo == "log":
                     self.escribir_log(dato)
+                elif tipo == "limpiar_fin":
+                    self.btn_limpiar.configure(state="normal")
+                    self.lbl_progreso.configure(text="")
                 elif tipo == "avance":
                     correctas, hechas, total = dato
                     self.barra.set(hechas / total)
