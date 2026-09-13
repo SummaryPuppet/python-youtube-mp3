@@ -11,4 +11,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-py-modules = ["main", "cli", "gui", "limpiar", "youtube"]
+py-modules = ["main", "cli", "gui", "limpiar", "youtube", "app_gui"]
+
+[dependency-groups]
+dev = ["pyinstaller>=6.11"]
